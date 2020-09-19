@@ -48,7 +48,13 @@ namespace updateFiles
 
             try
             {
-                if (File.GetLastWriteTime(oriFile) > File.GetLastWriteTime(destFile))
+                if (!File.Exists(destFile))
+                {
+                    Directory.CreateDirectory(Path.GetDirectoryName(destFile));
+                    File.Copy(oriFile, destFile, true);
+                }
+                    
+                else if (File.GetLastWriteTime(oriFile) > File.GetLastWriteTime(destFile))
                     File.Copy(oriFile, destFile, true);
             }
             catch (Exception ex)
