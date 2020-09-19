@@ -14,7 +14,9 @@ namespace updateFiles
         {
             try
             {
-                iteratePath(ConfigurationManager.AppSettings["oriPath"]);
+                iteratePath(ConfigurationManager.AppSettings["oriPath"], ConfigurationManager.AppSettings["destPath"], 0);
+                iteratePath(ConfigurationManager.AppSettings["destPath"], ConfigurationManager.AppSettings["oriPath"], -1);
+
             }
             catch (Exception ex)
             {
@@ -27,24 +29,29 @@ namespace updateFiles
             }
         }
 
-        public static void iteratePath(string path)
+        public static void iteratePath(string oriPath, string destPath, int delete)
         {
             // Process the list of files found in the directory.
-            string[] files = Directory.GetFiles(path);
+            string[] files = Directory.GetFiles(oriPath);
             foreach (string fileName in files)
-                checkFile(fileName);
+            {
+                if (delete == 0)
+                    checkFile(fileName, destPath);
+                else if (delete == -1)
+                    checkDeleteFile(fileName, destPath);
+            }
+
 
             // Recurse into subdirectories of this directory.
-            string[] subPaths = Directory.GetDirectories(path);
+            string[] subPaths = Directory.GetDirectories(oriPath);
             foreach (string sub in subPaths)
-                iteratePath(sub);
+                iteratePath(sub, destPath, delete);
         }
 
-        public static void checkFile(string oriFile)
+        public static void checkFile(string oriFile, string destPath)
         {
             // Create the path for the destination file
-            string destFile = ConfigurationManager.AppSettings["destPath"] +
-                oriFile.Replace(ConfigurationManager.AppSettings["oriPath"], "");
+            string destFile = destPath + oriFile.Replace(ConfigurationManager.AppSettings["oriPath"], "");
 
             try
             {
@@ -53,7 +60,7 @@ namespace updateFiles
                     Directory.CreateDirectory(Path.GetDirectoryName(destFile));
                     File.Copy(oriFile, destFile, true);
                 }
-                    
+
                 else if (File.GetLastWriteTime(oriFile) > File.GetLastWriteTime(destFile))
                     File.Copy(oriFile, destFile, true);
             }
@@ -62,6 +69,27 @@ namespace updateFiles
                 using (StreamWriter writer = new StreamWriter($@"{System.Reflection.Assembly.GetExecutingAssembly().Location}\\{DateTime.Now.ToString("yyyy-MM-dd")}.log", true))
                 {
                     writer.WriteLine("Error: Error trying to overwrite file." + Environment.NewLine + "Message :" + ex.Message + "<br/>" + Environment.NewLine + "StackTrace :" + ex.StackTrace +
+                       "" + Environment.NewLine + "Date :" + DateTime.Now.ToString());
+                    writer.WriteLine(Environment.NewLine + "-----------------------------------------------------------------------------" + Environment.NewLine);
+                }
+            }
+        }
+
+        public static void checkDeleteFile(string oriFile, string destPath)
+        {
+            // Create the path for the destination file
+            string destFile = destPath + oriFile.Replace(ConfigurationManager.AppSettings["destPath"], "");
+
+            try
+            {
+                if (!File.Exists(destFile))
+                    File.Delete(oriFile);
+            }
+            catch (Exception ex)
+            {
+                using (StreamWriter writer = new StreamWriter($@"{System.Reflection.Assembly.GetExecutingAssembly().Location}\\{DateTime.Now.ToString("yyyy-MM-dd")}.log", true))
+                {
+                    writer.WriteLine("Error: Error trying to delete file." + Environment.NewLine + "Message :" + ex.Message + "<br/>" + Environment.NewLine + "StackTrace :" + ex.StackTrace +
                        "" + Environment.NewLine + "Date :" + DateTime.Now.ToString());
                     writer.WriteLine(Environment.NewLine + "-----------------------------------------------------------------------------" + Environment.NewLine);
                 }
