@@ -11,7 +11,7 @@ namespace updateFiles
     class Program
     {
         static void Main(string[] args)
-        {
+        {  
             try
             {
                 iteratePath(ConfigurationManager.AppSettings["oriPath"], ConfigurationManager.AppSettings["destPath"], 0);
@@ -20,7 +20,7 @@ namespace updateFiles
             }
             catch (Exception ex)
             {
-                using (StreamWriter writer = new StreamWriter($@"{System.Reflection.Assembly.GetExecutingAssembly().Location}\\{DateTime.Now.ToString("yyyy-MM-dd")}.log", true))
+                using (StreamWriter writer = new StreamWriter($@"{Path.GetDirectoryName(System.Reflection.Assembly.GetExecutingAssembly().Location)}\\{DateTime.Now.ToString("yyyy-MM-dd")}.log", true))
                 {
                     writer.WriteLine("Message :" + ex.Message + "<br/>" + Environment.NewLine + "StackTrace :" + ex.StackTrace +
                        "" + Environment.NewLine + "Date :" + DateTime.Now.ToString());
@@ -66,7 +66,7 @@ namespace updateFiles
             }
             catch (Exception ex)
             {
-                using (StreamWriter writer = new StreamWriter($@"{System.Reflection.Assembly.GetExecutingAssembly().Location}\\{DateTime.Now.ToString("yyyy-MM-dd")}.log", true))
+                using (StreamWriter writer = new StreamWriter($@"{Path.GetDirectoryName(System.Reflection.Assembly.GetExecutingAssembly().Location)}\\{DateTime.Now.ToString("yyyy-MM-dd")}.log", true))
                 {
                     writer.WriteLine("Error: Error trying to overwrite file." + Environment.NewLine + "Message :" + ex.Message + "<br/>" + Environment.NewLine + "StackTrace :" + ex.StackTrace +
                        "" + Environment.NewLine + "Date :" + DateTime.Now.ToString());
@@ -84,10 +84,12 @@ namespace updateFiles
             {
                 if (!File.Exists(destFile))
                     File.Delete(oriFile);
+                else if (File.GetLastWriteTime(oriFile) > File.GetLastWriteTime(destFile))
+                    File.Copy(oriFile, destFile, true);
             }
             catch (Exception ex)
             {
-                using (StreamWriter writer = new StreamWriter($@"{System.Reflection.Assembly.GetExecutingAssembly().Location}\\{DateTime.Now.ToString("yyyy-MM-dd")}.log", true))
+                using (StreamWriter writer = new StreamWriter($@"{Path.GetDirectoryName(System.Reflection.Assembly.GetExecutingAssembly().Location)}\\{DateTime.Now.ToString("yyyy-MM-dd")}.log", true))
                 {
                     writer.WriteLine("Error: Error trying to delete file." + Environment.NewLine + "Message :" + ex.Message + "<br/>" + Environment.NewLine + "StackTrace :" + ex.StackTrace +
                        "" + Environment.NewLine + "Date :" + DateTime.Now.ToString());
